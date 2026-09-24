@@ -13,6 +13,7 @@ def main() -> None:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--expected-policy", required=True)
+    parser.add_argument("--prompt", default="move the object to the bowl")
     args = parser.parse_args()
 
     client = WebsocketClientPolicy(args.host, args.port)
@@ -27,7 +28,7 @@ def main() -> None:
             "observation/wrist_image_left": np.zeros((224, 224, 3), dtype=np.uint8),
             "observation/joint_position": np.zeros(7, dtype=np.float32),
             "observation/gripper_position": np.zeros(1, dtype=np.float32),
-            "prompt": "move the object to the bowl",
+            "prompt": args.prompt,
             "_robolab": {"episode": "smoke", "env_id": 0, "chunk_index": 0},
         }
     )
