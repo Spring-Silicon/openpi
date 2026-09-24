@@ -1,0 +1,20 @@
+[Unit]
+Description=Reverse tunnel from RoboLab cloud simulator to Seattle policy server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/home/sentradel/.config/spring-openpi/cloud.env
+ExecStart=/usr/bin/ssh -NT \
+  -i /home/sentradel/.ssh/robolab-cloud-tunnel \
+  -o BatchMode=yes \
+  -o ExitOnForwardFailure=yes \
+  -o ServerAliveInterval=30 \
+  -o ServerAliveCountMax=3 \
+  -R 18000:127.0.0.1:8000 ubuntu@${CLOUD_HOST}
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target
