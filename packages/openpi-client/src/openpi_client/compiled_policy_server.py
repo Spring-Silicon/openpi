@@ -4,6 +4,8 @@ import argparse
 import importlib.util
 import logging
 import pathlib
+import signal
+import subprocess
 import sys
 import threading
 from typing import Any
@@ -14,6 +16,7 @@ from openpi_client import base_policy
 from openpi_client.websocket_policy_server import WebsocketPolicyServer
 
 _VARIANTS = ("pi05_compiled_regular", "pi05_compiled_optimized")
+logger = logging.getLogger(__name__)
 
 
 def _load_unit(artifact: pathlib.Path, filename: str, module_name: str):
@@ -103,7 +106,20 @@ def _regular_backend(artifact: pathlib.Path, gpu: int, work_dir: pathlib.Path):
     return backend, module.Observation
 
 
+def _clean_optimized_containers() -> None:
+    listed = subprocess.run(
+        ["docker", "ps", "--format", "{{.Names}}", "--filter", "name=^pi05-mux-"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    for name in listed.stdout.split():
+        logger.warning("Stopping stale optimized policy container %s", name)
+        subprocess.run(["docker", "kill", name], check=True, capture_output=True, text=True)
+
+
 def _optimized_backend(artifact: pathlib.Path, gpu: int, work_dir: pathlib.Path):
+    _clean_optimized_containers()
     module = _load_unit(artifact, "unit_b580.py", "spring_compiled_optimized")
     backend = module.B580Policy(
         "pi05_compiled_optimized",
@@ -132,6 +148,11 @@ def main() -> None:
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, force=True)
+
+    def stop(_signum, _frame):
+        raise KeyboardInterrupt
+
+    signal.signal(signal.SIGTERM, stop)
     artifact = args.artifact_dir.resolve()
     work_dir = args.work_dir or pathlib.Path(f"/dev/shm/{args.variant}")
     work_dir.mkdir(parents=True, exist_ok=True)
