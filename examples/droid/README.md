@@ -54,6 +54,34 @@ The script will ask you to enter a free-form language instruction for the robot 
 | Policy does not perform the task well | In our experiments, the policy could perform simple table top manipulation tasks (pick-and-place) across a wide range of environments, camera positions, and lighting conditions. If the policy does not perform the task well, you can try modifying the scene or object placement to make the task easier. Also make sure that the camera view you are passing to the policy can see all relevant objects in the scene (the policy is only conditioned on a single external camera + wrist camera, make sure you are feeding the desired camera to the policy). Use `ZED_Explore` to check that the camera view you are passing to the policy can see all relevant objects in the scene. Finally, the policy is far from perfect and will fail on more complex manipulation tasks, but it usually makes a decent effort. :) |
 
 
+## Serving Spring Silicon compiled Pi05 policies
+
+Install the lightweight client package with the compiled-server dependencies:
+
+```bash
+uv pip install -e "packages/openpi-client[compiled]"
+```
+
+Then expose either checkpoint-A B580 artifact through the normal OpenPI
+WebSocket protocol:
+
+```bash
+openpi-serve-compiled \
+    --variant pi05_compiled_regular \
+    --artifact-dir /opt/pi05-compiled-regular-openvino-a \
+    --host 0.0.0.0 --port 8000
+
+openpi-serve-compiled \
+    --variant pi05_compiled_optimized \
+    --artifact-dir /opt/pi05-ssog-a-mc2-mux \
+    --host 0.0.0.0 --port 8000
+```
+
+Both variants return 15 absolute DROID joint-position actions. Only one may
+own a B580 at a time. The server advertises `policy_id`, action horizon, model
+identity, transform identity, and artifact digests to clients at connection
+time.
+
 ## Running Other Policies
 
 We provide configs for running the baseline DROID policies from the [RoboArena](https://robo-arena.github.io/) paper. Simply run the commands below to start inference servers for the respective policies. Then follow the instructions above to run evaluation on the DROID robot.
