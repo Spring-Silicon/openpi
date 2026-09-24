@@ -68,8 +68,10 @@ class CompiledPolicy(base_policy.BasePolicy):
             instruction=str(obs.get("prompt", "")),
             seed=0,
             images={
-                "base_0_rgb": np.asarray(obs["observation/exterior_image_1_left"], dtype=np.uint8),
-                "left_wrist_0_rgb": np.asarray(obs["observation/wrist_image_left"], dtype=np.uint8),
+                "exterior_image_1_left": np.asarray(
+                    obs["observation/exterior_image_1_left"], dtype=np.uint8
+                ),
+                "wrist_image_left": np.asarray(obs["observation/wrist_image_left"], dtype=np.uint8),
             },
             joint_position=np.asarray(obs["observation/joint_position"], dtype=np.float64),
             gripper_position=np.asarray(obs["observation/gripper_position"], dtype=np.float64),
