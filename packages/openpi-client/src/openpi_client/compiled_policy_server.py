@@ -106,6 +106,34 @@ def _regular_backend(artifact: pathlib.Path, gpu: int, work_dir: pathlib.Path):
     )
     return backend, module.Observation
 
+def _configure_optimized_mux(module) -> None:
+    windows = (64, 128, 256)
+
+    def tokenize(transform, prompt: str, state: np.ndarray):
+        cleaned = prompt.strip().replace("_", " ").replace("\n", " ")
+        discretized = np.digitize(state, bins=transform._bins) - 1
+        full = f"Task: {cleaned}, State: {' '.join(map(str, discretized))};\nAction: "
+        tokens = transform._tokenizer.encode(full, add_bos=True)
+        window = next((candidate for candidate in windows if len(tokens) <= candidate), None)
+        if window is None:
+            raise ValueError(f"Token length ({len(tokens)}) exceeds max length ({windows[-1]}).")
+        padding = window - len(tokens)
+        return (
+            np.asarray(tokens + [0] * padding, dtype=np.int64),
+            np.asarray([True] * len(tokens) + [False] * padding, dtype=bool),
+        )
+
+    module.MAX_TOKEN_LEN = windows[-1]
+    module.METHOD = {**module.METHOD, "max_token_len": windows[-1], "text_windows": list(windows)}
+    module.TRANSFORM = {
+        **module.TRANSFORM,
+        "inputs": [
+            item.replace("PaligemmaTokenizer(64, strict)", "PaligemmaTokenizer(64/128/256 mux, strict)")
+            for item in module.TRANSFORM["inputs"]
+        ],
+    }
+    module.Transform.tokenize = tokenize
+
 
 def _clean_optimized_containers() -> None:
     listed = subprocess.run(
@@ -122,6 +150,7 @@ def _clean_optimized_containers() -> None:
 def _optimized_backend(artifact: pathlib.Path, gpu: int, work_dir: pathlib.Path):
     _clean_optimized_containers()
     module = _load_unit(artifact, "unit_b580.py", "spring_compiled_optimized")
+    _configure_optimized_mux(module)
     backend = module.B580Policy(
         "pi05_compiled_optimized",
         module.Assets(
