@@ -49,6 +49,7 @@ class CompiledPolicy(base_policy.BasePolicy):
             "action_horizon": int(backend.spec.horizon),
             "action_dim": int(backend.spec.action_dim),
             "gateway": "openpi_client.compiled_policy_server",
+            "identity_sha256": backend.spec.identity_sha256,
         }
 
     def infer(self, obs: dict) -> dict:
