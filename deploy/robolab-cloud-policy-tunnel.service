@@ -5,9 +5,9 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-EnvironmentFile=/home/sentradel/.config/spring-openpi/cloud.env
+EnvironmentFile=%h/.config/spring-openpi/cloud.env
 ExecStart=/usr/bin/ssh -NT \
-  -i /home/sentradel/.ssh/robolab-cloud-tunnel \
+  -i %h/.ssh/robolab-cloud-tunnel \
   -o BatchMode=yes \
   -o ExitOnForwardFailure=yes \
   -o ServerAliveInterval=30 \
