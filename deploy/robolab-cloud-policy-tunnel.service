@@ -1,5 +1,5 @@
 [Unit]
-Description=Reverse tunnel from RoboLab cloud simulator to Seattle policy server
+Description=RoboLab cloud policy and dashboard tunnels
 After=network-online.target
 Wants=network-online.target
 
@@ -12,7 +12,8 @@ ExecStart=/usr/bin/ssh -NT \
   -o ExitOnForwardFailure=yes \
   -o ServerAliveInterval=30 \
   -o ServerAliveCountMax=3 \
-  -R 18000:127.0.0.1:8000 ubuntu@${CLOUD_HOST}
+  -R 18000:127.0.0.1:8000 \
+  -L ${DASHBOARD_FORWARD} ubuntu@${CLOUD_HOST}
 Restart=always
 RestartSec=10
 
