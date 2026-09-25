@@ -5,8 +5,8 @@ Wants=network-online.target docker.service
 
 [Service]
 Type=simple
-WorkingDirectory=%h/Desktop/openpi
-ExecStart=%h/Desktop/openpi/deploy/run_compiled_policy.sh %i
+WorkingDirectory=%h/.local/share/robolab/openpi
+ExecStart=%h/.local/share/robolab/openpi/deploy/run_compiled_policy.sh %i
 Restart=on-failure
 RestartSec=10
 TimeoutStartSec=900
