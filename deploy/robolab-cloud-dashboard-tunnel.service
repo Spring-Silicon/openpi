@@ -1,5 +1,5 @@
 [Unit]
-Description=RoboLab cloud policy tunnel
+Description=RoboLab cloud dashboard tunnel
 After=network-online.target
 Wants=network-online.target
 
@@ -12,8 +12,7 @@ ExecStart=/usr/bin/ssh -NT \
   -o ExitOnForwardFailure=yes \
   -o ServerAliveInterval=30 \
   -o ServerAliveCountMax=3 \
-  -R 18000:127.0.0.1:8100 \
-  ubuntu@${CLOUD_HOST}
+  -L ${DASHBOARD_FORWARD} ubuntu@${CLOUD_HOST}
 Restart=always
 RestartSec=10
 
