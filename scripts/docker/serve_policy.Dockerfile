@@ -31,8 +31,12 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=packages/openpi-client/src,target=packages/openpi-client/src \
     GIT_LFS_SKIP_SMUDGE=1 uv sync --frozen --no-install-project --no-dev
 
+# Bake the server source into the image; callers only mount the model cache.
+COPY . /app
+RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-dev
+
 # Copy transformers_replace files while preserving directory structure
 COPY src/openpi/models_pytorch/transformers_replace/ /tmp/transformers_replace/
 RUN /.venv/bin/python -c "import transformers; print(transformers.__file__)" | xargs dirname | xargs -I{} cp -r /tmp/transformers_replace/* {} && rm -rf /tmp/transformers_replace
 
-CMD /bin/bash -c "uv run scripts/serve_policy.py $SERVER_ARGS"
+ENTRYPOINT ["/.venv/bin/python", "scripts/serve_policy.py"]

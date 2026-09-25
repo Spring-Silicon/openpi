@@ -1,0 +1,16 @@
+[Unit]
+Description=Spring OpenPI compiled policy gateway (%i)
+After=network-online.target docker.service
+Wants=network-online.target docker.service
+
+[Service]
+Type=simple
+WorkingDirectory=%h/Desktop/openpi
+ExecStart=%h/Desktop/openpi/deploy/run_compiled_policy.sh %i
+Restart=on-failure
+RestartSec=10
+TimeoutStartSec=900
+TimeoutStopSec=90
+
+[Install]
+WantedBy=default.target
